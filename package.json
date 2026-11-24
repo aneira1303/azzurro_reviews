@@ -1,0 +1,11 @@
+{
+  "name": "azzurro-reviews",
+  "private": true,
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix client && npx --prefix server playwright install chromium",
+    "dev": "concurrently -n api,web \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "scrape": "npm run scrape --prefix server",
+    "seed": "npm run seed --prefix server"
+  },
+  "devDependencies": { "concurrently": "^9.0.0" }
+}

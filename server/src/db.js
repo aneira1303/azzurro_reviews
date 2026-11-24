@@ -11,14 +11,19 @@ const cfg = {
   port: +(process.env.DB_PORT || 3306),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
+  ...(process.env.DB_SSL === '1' ? { ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true } } : {}),
 };
 const DB = process.env.DB_NAME || 'azzurro_reviews';
 export let pool;
 
 export async function initDb() {
-  const boot = await mysql.createConnection(cfg);
-  await boot.query(`CREATE DATABASE IF NOT EXISTS \`${DB}\` CHARACTER SET utf8mb4`);
-  await boot.end();
+  try {
+    const boot = await mysql.createConnection(cfg);
+    await boot.query(`CREATE DATABASE IF NOT EXISTS \`${DB}\` CHARACTER SET utf8mb4`);
+    await boot.end();
+  } catch (e) {
+    console.warn('Skipping CREATE DATABASE:', e.message);
+  }
   pool = mysql.createPool({ ...cfg, database: DB, dateStrings: true, connectionLimit: 10, charset: 'utf8mb4' });
   const schema = fs.readFileSync(path.join(dir, '../schema.sql'), 'utf8');
   for (const stmt of schema.split(';').map(s => s.trim()).filter(Boolean)) await pool.query(stmt);
